@@ -40,6 +40,7 @@ dependencies:
   build_runner: ^2.1.7
   http: ^0.13.4
   mockito: ^5.0.17
+  confetti: ^0.6.0
 
 dev_dependencies:
   flutter_test:

@@ -5,7 +5,9 @@ import 'package:flutter/material.dart';
 import 'dart:math';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
-import 'package:flutter/services.dart' show DeviceOrientation, SystemChrome, rootBundle;
+import 'package:flutter/services.dart'
+    show DeviceOrientation, SystemChrome, rootBundle;
+import 'package:confetti/confetti.dart';
 
 String wordle = '';
 String guess = '';
@@ -13,8 +15,8 @@ int trial = 0;
 bool solved = false;
 bool done = false;
 List<String>? results = []..length = 0;
-List<String>? allowedGuesses=[]..length = 0;
-List<String>? answers=[]..length = 0;
+List<String>? allowedGuesses = []..length = 0;
+List<String>? answers = []..length = 0;
 Map<String, Color> keyboardMap = {
   'q': Colors.grey[300]!,
   'w': Colors.grey[300]!,
@@ -103,34 +105,36 @@ void createWord() {
 }
 
 Future<void> readWords() async {
-  if(answers?.length==0){
-    try{
-      await rootBundle.loadString('assets/allowed_guesses.txt').then((value) => {
-        for(String i in const LineSplitter().convert(value)){
-          allowedGuesses?.add(i),
-        },
-        saveGuessesPreference(allowedGuesses!),
-      });
+  if (answers?.length == 0) {
+    try {
+      await rootBundle
+          .loadString('assets/allowed_guesses.txt')
+          .then((value) => {
+                for (String i in const LineSplitter().convert(value))
+                  {
+                    allowedGuesses?.add(i),
+                  },
+                saveGuessesPreference(allowedGuesses!),
+              });
       await rootBundle.loadString('assets/answers.txt').then((value) => {
-        for(String i in const LineSplitter().convert(value)){
-          answers?.add(i),
-        },
-        saveAnswersPreference(answers!),
-      });
-    }
-    catch(e){
+            for (String i in const LineSplitter().convert(value))
+              {
+                answers?.add(i),
+              },
+            saveAnswersPreference(answers!),
+          });
+    } catch (e) {
       if (kDebugMode) {
         print(e);
       }
     }
-  }
-  else{
+  } else {
     getAnswersPreference().then((value) => {
-      answers=value,
-    });
+          answers = value,
+        });
     getGuessesPreference().then((value) => {
-      allowedGuesses=value,
-    });
+          allowedGuesses = value,
+        });
   }
 }
 
@@ -441,6 +445,8 @@ class GameScreen extends StatefulWidget {
 }
 
 class _GameScreenState extends State<GameScreen> {
+  late ConfettiController _controllerRight;
+  late ConfettiController _controllerLeft;
   static const row = 6;
   static const col = 5;
   var table = List.generate(row, (i) => List.filled(col, '', growable: false),
@@ -483,6 +489,15 @@ class _GameScreenState extends State<GameScreen> {
     trial = 0;
     solved = false;
     done = false;
+    _controllerRight = ConfettiController(duration: const Duration(seconds: 1));
+    _controllerLeft = ConfettiController(duration: const Duration(seconds: 1));
+  }
+
+  @override
+  void dispose() {
+    _controllerLeft.dispose();
+    _controllerRight.dispose();
+    super.dispose();
   }
 
   void deleteLetter() {
@@ -539,10 +554,10 @@ class _GameScreenState extends State<GameScreen> {
     saveResultsPreference(results!);
   }
 
-  void checkGuess(){
+  void checkGuess() {
     setState(() {
-      if(trial< 6 &&!done){
-        if(wordle==guess){
+      if (trial < 6 && !done) {
+        if (wordle == guess) {
           for (int i = 0; i < 5; i++) {
             colorTable[trial][i] = Colors.green;
             keyboardMap[guess.characters.elementAt(i)] = Colors.green;
@@ -550,14 +565,11 @@ class _GameScreenState extends State<GameScreen> {
           done = true;
           solved = true;
           trial++;
-        }
-        else if(allowedGuesses?.contains(guess)??false){
+        } else if (allowedGuesses?.contains(guess) ?? false) {
           for (int i = 0; i < 5; i++) {
-            if (wordle.characters
-                .contains(guess.characters.elementAt(i))) {
+            if (wordle.characters.contains(guess.characters.elementAt(i))) {
               colorTable[trial][i] = Colors.amber;
-              if (keyboardMap[guess.characters.elementAt(i)] !=
-                  Colors.green) {
+              if (keyboardMap[guess.characters.elementAt(i)] != Colors.green) {
                 keyboardMap[guess.characters.elementAt(i)] = Colors.amber;
               }
             } else {
@@ -573,15 +585,16 @@ class _GameScreenState extends State<GameScreen> {
             }
           }
           trial++;
-          guess='';
+          guess = '';
         }
       }
-      if(trial==6 || done ==true){
-        done=true;
+      if (trial == 6 || done == true) {
+        done = true;
         endGame();
       }
     });
   }
+
   var _pressed = '';
 
   void _onPointerDown(String letter) {
@@ -616,7 +629,8 @@ class _GameScreenState extends State<GameScreen> {
             style: TextStyle(
                 color: _pressed != letter
                     ? Colors.black
-                    : Colors.black.withOpacity(0.25),fontSize: 18),
+                    : Colors.black.withOpacity(0.25),
+                fontSize: 18),
             child: Text(
               letter.toUpperCase(),
               textAlign: TextAlign.center,
@@ -631,7 +645,7 @@ class _GameScreenState extends State<GameScreen> {
           borderRadius: BorderRadius.circular(10),
         ),
         padding: const EdgeInsets.all(0),
-        margin: const EdgeInsets.only(top: 5,bottom: 5),
+        margin: const EdgeInsets.only(top: 5, bottom: 5),
       ),
     );
   }
@@ -667,6 +681,23 @@ class _GameScreenState extends State<GameScreen> {
               Navigator.popUntil(context, ModalRoute.withName('/'));
             },
             icon: const Icon(Icons.arrow_back)),
+        actions: done
+            ? [
+                CupertinoButton(
+                    child: const Text('Play Again'),
+                    onPressed: () {
+                      createWord();
+                      Navigator.pushReplacement(
+                        context,
+                        PageRouteBuilder(
+                          pageBuilder: (context, animation1, animation2) =>
+                              const GameScreen(),
+                          transitionDuration: const Duration(seconds: 0),
+                        ),
+                      );
+                    }),
+              ]
+            : null,
       ),
       body: Center(
         child: Container(
@@ -789,7 +820,10 @@ class _GameScreenState extends State<GameScreen> {
                           ),
                         );
                       }
-                      if (done) {
+                      if (done && solved) {
+                        _controllerRight.play();
+                        _controllerLeft.play();
+                      } else if (done) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text('The Word is ' + wordle),
@@ -816,6 +850,27 @@ class _GameScreenState extends State<GameScreen> {
                     child: const Icon(Icons.backspace_outlined),
                     onPressed: deleteLetter,
                     padding: const EdgeInsets.all(0),
+                  ),
+                ],
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  ConfettiWidget(
+                    confettiController: _controllerLeft,
+                    blastDirection: pi / 4,
+                    emissionFrequency: 0.3,
+                    numberOfParticles: 10,
+                    shouldLoop: false,
+                    blastDirectionality: BlastDirectionality.explosive,
+                  ),
+                  ConfettiWidget(
+                    confettiController: _controllerRight,
+                    blastDirection: 3 * pi / 4,
+                    emissionFrequency: 0.3,
+                    numberOfParticles: 10,
+                    shouldLoop: false,
+                    blastDirectionality: BlastDirectionality.explosive,
                   ),
                 ],
               ),
