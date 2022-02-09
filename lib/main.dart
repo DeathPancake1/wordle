@@ -1,10 +1,11 @@
+import 'dart:convert';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:english_words/english_words.dart';
 import 'dart:math';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
-import 'package:flutter/services.dart';
+import 'package:flutter/services.dart' show DeviceOrientation, SystemChrome, rootBundle;
 
 String wordle = '';
 String guess = '';
@@ -12,6 +13,8 @@ int trial = 0;
 bool solved = false;
 bool done = false;
 List<String>? results = []..length = 0;
+List<String>? allowedGuesses=[]..length = 0;
+List<String>? answers=[]..length = 0;
 Map<String, Color> keyboardMap = {
   'q': Colors.grey[300]!,
   'w': Colors.grey[300]!,
@@ -53,6 +56,30 @@ Future<List<String>?> getResultsPreference() async {
   return res;
 }
 
+Future<bool> saveGuessesPreference(List<String> guesses) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  prefs.setStringList('guesses', guesses);
+  return prefs.commit();
+}
+
+Future<List<String>?> getGuessesPreference() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  List<String>? guesses = prefs.getStringList('guesses');
+  return guesses;
+}
+
+Future<bool> saveAnswersPreference(List<String> answers) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  prefs.setStringList('answers', answers);
+  return prefs.commit();
+}
+
+Future<List<String>?> getAnswersPreference() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  List<String>? answers = prefs.getStringList('answers');
+  return answers;
+}
+
 Future<bool> saveVisitsPreference(int visits) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   prefs.setInt('visits', visits);
@@ -71,9 +98,39 @@ void createWord() {
   solved = false;
   trial = 0;
   Random random = Random();
-  while (wordle.length != 5) {
-    int rnd = random.nextInt(4333);
-    wordle = all[rnd].toLowerCase();
+  int rnd = random.nextInt(2315);
+  wordle = answers![rnd];
+}
+
+Future<void> readWords() async {
+  if(answers?.length==0){
+    try{
+      await rootBundle.loadString('assets/allowed_guesses.txt').then((value) => {
+        for(String i in const LineSplitter().convert(value)){
+          allowedGuesses?.add(i),
+        },
+        saveGuessesPreference(allowedGuesses!),
+      });
+      await rootBundle.loadString('assets/answers.txt').then((value) => {
+        for(String i in const LineSplitter().convert(value)){
+          answers?.add(i),
+        },
+        saveAnswersPreference(answers!),
+      });
+    }
+    catch(e){
+      if (kDebugMode) {
+        print(e);
+      }
+    }
+  }
+  else{
+    getAnswersPreference().then((value) => {
+      answers=value,
+    });
+    getGuessesPreference().then((value) => {
+      allowedGuesses=value,
+    });
   }
 }
 
@@ -116,6 +173,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    readWords();
     getResultsPreference().then((value) => {
           results = value,
         });
@@ -481,54 +539,49 @@ class _GameScreenState extends State<GameScreen> {
     saveResultsPreference(results!);
   }
 
-  void checkGuess() {
+  void checkGuess(){
     setState(() {
-      if (trial < 6 && !done) {
-        if (guess.length == 5) {
-          for (var element in all) {
-            if (element.toLowerCase() == guess) {
-              if (guess == wordle) {
-                for (int i = 0; i < 5; i++) {
-                  colorTable[trial][i] = Colors.green;
-                  keyboardMap[guess.characters.elementAt(i)] = Colors.green;
-                }
-                done = true;
-                solved = true;
-              } else {
-                for (int i = 0; i < 5; i++) {
-                  if (wordle.characters
-                      .contains(guess.characters.elementAt(i))) {
-                    colorTable[trial][i] = Colors.amber;
-                    if (keyboardMap[guess.characters.elementAt(i)] !=
-                        Colors.green) {
-                      keyboardMap[guess.characters.elementAt(i)] = Colors.amber;
-                    }
-                  } else {
-                    colorTable[trial][i] = Colors.grey;
-                    keyboardMap[guess.characters.elementAt(i)] = Colors.grey;
-                  }
-                }
-                for (int i = 0; i < 5; i++) {
-                  if (guess.characters.elementAt(i) ==
-                      wordle.characters.elementAt(i)) {
-                    colorTable[trial][i] = Colors.green;
-                    keyboardMap[guess.characters.elementAt(i)] = Colors.green;
-                  }
-                }
+      if(trial< 6 &&!done){
+        if(wordle==guess){
+          for (int i = 0; i < 5; i++) {
+            colorTable[trial][i] = Colors.green;
+            keyboardMap[guess.characters.elementAt(i)] = Colors.green;
+          }
+          done = true;
+          solved = true;
+          trial++;
+        }
+        else if(allowedGuesses?.contains(guess)??false){
+          for (int i = 0; i < 5; i++) {
+            if (wordle.characters
+                .contains(guess.characters.elementAt(i))) {
+              colorTable[trial][i] = Colors.amber;
+              if (keyboardMap[guess.characters.elementAt(i)] !=
+                  Colors.green) {
+                keyboardMap[guess.characters.elementAt(i)] = Colors.amber;
               }
-              trial++;
-              guess = '';
+            } else {
+              colorTable[trial][i] = Colors.grey;
+              keyboardMap[guess.characters.elementAt(i)] = Colors.grey;
             }
           }
+          for (int i = 0; i < 5; i++) {
+            if (guess.characters.elementAt(i) ==
+                wordle.characters.elementAt(i)) {
+              colorTable[trial][i] = Colors.green;
+              keyboardMap[guess.characters.elementAt(i)] = Colors.green;
+            }
+          }
+          trial++;
+          guess='';
         }
-        if (trial == 6 || done == true) {
-          done = true;
-          endGame();
-        }
+      }
+      if(trial==6 || done ==true){
+        done=true;
+        endGame();
       }
     });
   }
-
   var _pressed = '';
 
   void _onPointerDown(String letter) {
