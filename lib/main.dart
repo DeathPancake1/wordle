@@ -13,32 +13,32 @@ bool solved = false;
 bool done = false;
 List<String>? results = []..length = 0;
 Map<String, Color> keyboardMap = {
-  'q': Colors.transparent,
-  'w': Colors.transparent,
-  'e': Colors.transparent,
-  'r': Colors.transparent,
-  't': Colors.transparent,
-  'y': Colors.transparent,
-  'u': Colors.transparent,
-  'i': Colors.transparent,
-  'a': Colors.transparent,
-  's': Colors.transparent,
-  'd': Colors.transparent,
-  'f': Colors.transparent,
-  'g': Colors.transparent,
-  'h': Colors.transparent,
-  'j': Colors.transparent,
-  'k': Colors.transparent,
-  'z': Colors.transparent,
-  'x': Colors.transparent,
-  'c': Colors.transparent,
-  'v': Colors.transparent,
-  'b': Colors.transparent,
-  'n': Colors.transparent,
-  'm': Colors.transparent,
-  'p': Colors.transparent,
-  'l': Colors.transparent,
-  'o': Colors.transparent,
+  'q': Colors.grey[300]!,
+  'w': Colors.grey[300]!,
+  'e': Colors.grey[300]!,
+  'r': Colors.grey[300]!,
+  't': Colors.grey[300]!,
+  'y': Colors.grey[300]!,
+  'u': Colors.grey[300]!,
+  'i': Colors.grey[300]!,
+  'a': Colors.grey[300]!,
+  's': Colors.grey[300]!,
+  'd': Colors.grey[300]!,
+  'f': Colors.grey[300]!,
+  'g': Colors.grey[300]!,
+  'h': Colors.grey[300]!,
+  'j': Colors.grey[300]!,
+  'k': Colors.grey[300]!,
+  'z': Colors.grey[300]!,
+  'x': Colors.grey[300]!,
+  'c': Colors.grey[300]!,
+  'v': Colors.grey[300]!,
+  'b': Colors.grey[300]!,
+  'n': Colors.grey[300]!,
+  'm': Colors.grey[300]!,
+  'p': Colors.grey[300]!,
+  'l': Colors.grey[300]!,
+  'o': Colors.grey[300]!,
 };
 
 Future<bool> saveResultsPreference(List<String> res) async {
@@ -51,6 +51,30 @@ Future<List<String>?> getResultsPreference() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   List<String>? res = prefs.getStringList('results');
   return res;
+}
+
+Future<bool> saveVisitsPreference(int visits) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  prefs.setInt('visits', visits);
+  return prefs.commit();
+}
+
+Future<int?> getVisitsPreference() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  int? visits = prefs.getInt('visits');
+  return visits;
+}
+
+void createWord() {
+  wordle = '';
+  done = false;
+  solved = false;
+  trial = 0;
+  Random random = Random();
+  while (wordle.length != 5) {
+    int rnd = random.nextInt(4333);
+    wordle = all[rnd].toLowerCase();
+  }
 }
 
 void main() => {
@@ -97,18 +121,6 @@ class _HomeScreenState extends State<HomeScreen> {
         });
   }
 
-  void createWord() {
-    wordle = '';
-    done = false;
-    solved = false;
-    trial = 0;
-    Random random = Random();
-    while (wordle.length != 5) {
-      int rnd = random.nextInt(4333);
-      wordle = all[rnd].toLowerCase();
-    }
-  }
-
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -146,16 +158,53 @@ class _HomeScreenState extends State<HomeScreen> {
     return scores;
   }
 
-  Center _activePage(int index) {
+  Widget _activePage(int index) {
     if (index == 0) {
-      return Center(
-        child: CupertinoButton.filled(
-            child: const Text('Start'),
-            onPressed: () {
-              createWord();
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => const GameScreen()));
-            }),
+      return Column(
+        children: [
+          Center(
+            child: CupertinoButton.filled(
+                child: const Text('Start'),
+                onPressed: () {
+                  getVisitsPreference().then((value) => {
+                        if (value != null)
+                          {
+                            createWord(),
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => const GameScreen())),
+                          }
+                        else
+                          {
+                            saveVisitsPreference(1),
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        const TutorialScreen())),
+                          }
+                      });
+                }),
+          ),
+          const Divider(
+            endIndent: 100,
+            indent: 100,
+          ),
+          Center(
+            child: CupertinoButton.filled(
+                child: const Text('How to play'),
+                padding: const EdgeInsets.all(14),
+                onPressed: () {
+                  saveVisitsPreference(1);
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const TutorialScreen()));
+                }),
+          )
+        ],
+        mainAxisAlignment: MainAxisAlignment.center,
       );
     } else {
       return Center(
@@ -188,6 +237,145 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
+class TutorialScreen extends StatelessWidget {
+  const TutorialScreen({Key? key}) : super(key: key);
+
+  static const _textStyling = TextStyle(
+    fontSize: 18,
+  );
+  SizedBox _letterBox(String letter, Color color) {
+    return SizedBox.square(
+      dimension: 60,
+      child: Container(
+        margin: const EdgeInsets.all(5),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: Colors.grey[500]!,
+            width: 3,
+          ),
+          color: color,
+        ),
+        child: Text(
+          letter,
+          style: const TextStyle(fontSize: 24),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.grey[200],
+      appBar: AppBar(
+        leading: IconButton(
+            onPressed: () {
+              Navigator.popUntil(context, ModalRoute.withName('/'));
+            },
+            icon: const Icon(Icons.arrow_back)),
+        title: const Text('Wordle Tutorial'),
+      ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Text(
+              'Guess the Wordle in 6 tries.',
+              style: _textStyling,
+            ),
+          ),
+          const Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Text(
+              'Each guess must be a valid 5 letter word.',
+              style: _textStyling,
+            ),
+          ),
+          const Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Text(
+              'After each guess, the color of the tiles will change to show how close your guess was to the word.',
+              style: _textStyling,
+            ),
+          ),
+          const Divider(),
+          const Padding(
+            padding: EdgeInsets.all(8),
+            child: Text(
+              'Examples',
+              style: TextStyle(fontSize: 28),
+            ),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _letterBox('S', Colors.green),
+              _letterBox('H', Colors.transparent),
+              _letterBox('I', Colors.transparent),
+              _letterBox('N', Colors.transparent),
+              _letterBox('E', Colors.transparent),
+            ],
+          ),
+          const Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Text(
+              'The letter S is in the word and in the correct spot.',
+              style: _textStyling,
+            ),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _letterBox('B', Colors.transparent),
+              _letterBox('L', Colors.transparent),
+              _letterBox('I', Colors.transparent),
+              _letterBox('N', Colors.amber),
+              _letterBox('D', Colors.transparent),
+            ],
+          ),
+          const Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Text(
+              'The letter N is in the word but in the wrong spot.',
+              style: _textStyling,
+            ),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _letterBox('S', Colors.transparent),
+              _letterBox('P', Colors.grey),
+              _letterBox('E', Colors.transparent),
+              _letterBox('N', Colors.transparent),
+              _letterBox('D', Colors.transparent),
+            ],
+          ),
+          const Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Text(
+              'The letter P is not in the word in any spot.',
+              style: _textStyling,
+            ),
+          ),
+          Center(
+            child: CupertinoButton.filled(
+                child: const Text('Start'),
+                onPressed: () {
+                  createWord();
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const GameScreen()));
+                }),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class GameScreen extends StatefulWidget {
   const GameScreen({Key? key}) : super(key: key);
   @override
@@ -200,38 +388,38 @@ class _GameScreenState extends State<GameScreen> {
   var table = List.generate(row, (i) => List.filled(col, '', growable: false),
       growable: false);
   var colorTable = List.generate(
-      row, (i) => List.filled(col, Colors.grey[300], growable: false),
+      row, (i) => List.filled(col, Colors.grey[100], growable: false),
       growable: false);
   @override
   void initState() {
     super.initState();
     keyboardMap = {
-      'q': Colors.transparent,
-      'w': Colors.transparent,
-      'e': Colors.transparent,
-      'r': Colors.transparent,
-      't': Colors.transparent,
-      'y': Colors.transparent,
-      'u': Colors.transparent,
-      'i': Colors.transparent,
-      'a': Colors.transparent,
-      's': Colors.transparent,
-      'd': Colors.transparent,
-      'f': Colors.transparent,
-      'g': Colors.transparent,
-      'h': Colors.transparent,
-      'j': Colors.transparent,
-      'k': Colors.transparent,
-      'z': Colors.transparent,
-      'x': Colors.transparent,
-      'c': Colors.transparent,
-      'v': Colors.transparent,
-      'b': Colors.transparent,
-      'n': Colors.transparent,
-      'm': Colors.transparent,
-      'p': Colors.transparent,
-      'l': Colors.transparent,
-      'o': Colors.transparent,
+      'q': Colors.grey[300]!,
+      'w': Colors.grey[300]!,
+      'e': Colors.grey[300]!,
+      'r': Colors.grey[300]!,
+      't': Colors.grey[300]!,
+      'y': Colors.grey[300]!,
+      'u': Colors.grey[300]!,
+      'i': Colors.grey[300]!,
+      'a': Colors.grey[300]!,
+      's': Colors.grey[300]!,
+      'd': Colors.grey[300]!,
+      'f': Colors.grey[300]!,
+      'g': Colors.grey[300]!,
+      'h': Colors.grey[300]!,
+      'j': Colors.grey[300]!,
+      'k': Colors.grey[300]!,
+      'z': Colors.grey[300]!,
+      'x': Colors.grey[300]!,
+      'c': Colors.grey[300]!,
+      'v': Colors.grey[300]!,
+      'b': Colors.grey[300]!,
+      'n': Colors.grey[300]!,
+      'm': Colors.grey[300]!,
+      'p': Colors.grey[300]!,
+      'l': Colors.grey[300]!,
+      'o': Colors.grey[300]!,
     };
     guess = '';
     trial = 0;
@@ -341,7 +529,7 @@ class _GameScreenState extends State<GameScreen> {
     });
   }
 
-  var _pressed = 'kosom el sisi';
+  var _pressed = '';
 
   void _onPointerDown(String letter) {
     setState(() {
@@ -352,11 +540,11 @@ class _GameScreenState extends State<GameScreen> {
   void _onPointerUp(String letter) {
     setState(() {
       appendLetter(letter);
-      _pressed = 'kosom el sisi';
+      _pressed = '';
     });
   }
 
-  Listener letterButton(String letter) {
+  Listener _letterButton(String letter) {
     return Listener(
       onPointerDown: (p) {
         _onPointerDown(letter);
@@ -367,15 +555,15 @@ class _GameScreenState extends State<GameScreen> {
         });
       },
       child: Container(
-        width: 30,
-        height: 50,
+        width: 32,
+        height: 53,
         child: Center(
           child: AnimatedDefaultTextStyle(
             duration: const Duration(milliseconds: 100),
             style: TextStyle(
                 color: _pressed != letter
                     ? Colors.black
-                    : Colors.black.withOpacity(0.25)),
+                    : Colors.black.withOpacity(0.25),fontSize: 18),
             child: Text(
               letter.toUpperCase(),
               textAlign: TextAlign.center,
@@ -390,26 +578,26 @@ class _GameScreenState extends State<GameScreen> {
           borderRadius: BorderRadius.circular(10),
         ),
         padding: const EdgeInsets.all(0),
-        margin: const EdgeInsets.all(3),
+        margin: const EdgeInsets.only(top: 5,bottom: 5),
       ),
     );
   }
 
-  SizedBox letterBox(int x, y) {
+  SizedBox _letterBox(int x, y) {
     return SizedBox.square(
-      dimension: 50,
+      dimension: 60,
       child: Container(
         margin: const EdgeInsets.all(5),
         alignment: Alignment.center,
         decoration: BoxDecoration(
           border: Border.all(
-            color: Colors.black,
+            color: Colors.grey[500]!,
             width: 3,
           ),
           color: colorTable[x][y],
         ),
         child: Text(
-          table[x][y],
+          table[x][y].toUpperCase(),
           style: const TextStyle(fontSize: 24),
         ),
       ),
@@ -423,109 +611,112 @@ class _GameScreenState extends State<GameScreen> {
         title: const Text('Wordle Clone'),
         leading: IconButton(
             onPressed: () {
-              Navigator.of(context).pop();
+              Navigator.popUntil(context, ModalRoute.withName('/'));
             },
             icon: const Icon(Icons.arrow_back)),
       ),
       body: Center(
         child: Container(
-          color: Colors.grey[300],
+          color: Colors.grey[100],
           alignment: Alignment.center,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 10.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _letterBox(0, 0),
+                    _letterBox(0, 1),
+                    _letterBox(0, 2),
+                    _letterBox(0, 3),
+                    _letterBox(0, 4),
+                  ],
+                ),
+              ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  letterBox(0, 0),
-                  letterBox(0, 1),
-                  letterBox(0, 2),
-                  letterBox(0, 3),
-                  letterBox(0, 4),
+                  _letterBox(1, 0),
+                  _letterBox(1, 1),
+                  _letterBox(1, 2),
+                  _letterBox(1, 3),
+                  _letterBox(1, 4),
                 ],
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  letterBox(1, 0),
-                  letterBox(1, 1),
-                  letterBox(1, 2),
-                  letterBox(1, 3),
-                  letterBox(1, 4),
+                  _letterBox(2, 0),
+                  _letterBox(2, 1),
+                  _letterBox(2, 2),
+                  _letterBox(2, 3),
+                  _letterBox(2, 4),
                 ],
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  letterBox(2, 0),
-                  letterBox(2, 1),
-                  letterBox(2, 2),
-                  letterBox(2, 3),
-                  letterBox(2, 4),
+                  _letterBox(3, 0),
+                  _letterBox(3, 1),
+                  _letterBox(3, 2),
+                  _letterBox(3, 3),
+                  _letterBox(3, 4),
                 ],
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  letterBox(3, 0),
-                  letterBox(3, 1),
-                  letterBox(3, 2),
-                  letterBox(3, 3),
-                  letterBox(3, 4),
+                  _letterBox(4, 0),
+                  _letterBox(4, 1),
+                  _letterBox(4, 2),
+                  _letterBox(4, 3),
+                  _letterBox(4, 4),
                 ],
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  letterBox(4, 0),
-                  letterBox(4, 1),
-                  letterBox(4, 2),
-                  letterBox(4, 3),
-                  letterBox(4, 4),
-                ],
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  letterBox(5, 0),
-                  letterBox(5, 1),
-                  letterBox(5, 2),
-                  letterBox(5, 3),
-                  letterBox(5, 4),
+                  _letterBox(5, 0),
+                  _letterBox(5, 1),
+                  _letterBox(5, 2),
+                  _letterBox(5, 3),
+                  _letterBox(5, 4),
                 ],
               ),
               const Spacer(),
               Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  letterButton('q'),
-                  letterButton('w'),
-                  letterButton('e'),
-                  letterButton('r'),
-                  letterButton('t'),
-                  letterButton('y'),
-                  letterButton('u'),
-                  letterButton('i'),
-                  letterButton('o'),
-                  letterButton('p'),
+                  _letterButton('q'),
+                  _letterButton('w'),
+                  _letterButton('e'),
+                  _letterButton('r'),
+                  _letterButton('t'),
+                  _letterButton('y'),
+                  _letterButton('u'),
+                  _letterButton('i'),
+                  _letterButton('o'),
+                  _letterButton('p'),
                 ],
               ),
               Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  letterButton('a'),
-                  letterButton('s'),
-                  letterButton('d'),
-                  letterButton('f'),
-                  letterButton('g'),
-                  letterButton('h'),
-                  letterButton('j'),
-                  letterButton('k'),
-                  letterButton('l'),
+                  _letterButton('a'),
+                  _letterButton('s'),
+                  _letterButton('d'),
+                  _letterButton('f'),
+                  _letterButton('g'),
+                  _letterButton('h'),
+                  _letterButton('j'),
+                  _letterButton('k'),
+                  _letterButton('l'),
                 ],
               ),
               Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   CupertinoButton(
                     child: const Text('Enter'),
@@ -561,13 +752,13 @@ class _GameScreenState extends State<GameScreen> {
                     },
                     padding: const EdgeInsets.all(0),
                   ),
-                  letterButton('z'),
-                  letterButton('x'),
-                  letterButton('c'),
-                  letterButton('v'),
-                  letterButton('b'),
-                  letterButton('n'),
-                  letterButton('m'),
+                  _letterButton('z'),
+                  _letterButton('x'),
+                  _letterButton('c'),
+                  _letterButton('v'),
+                  _letterButton('b'),
+                  _letterButton('n'),
+                  _letterButton('m'),
                   CupertinoButton(
                     child: const Icon(Icons.backspace_outlined),
                     onPressed: deleteLetter,
