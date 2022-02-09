@@ -54,11 +54,11 @@ Future<List<String>?> getResultsPreference() async {
 }
 
 void main() => {
-  WidgetsFlutterBinding.ensureInitialized(),
-  SystemChrome.setPreferredOrientations(
-      [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]),
-  runApp(const MyApp())
-};
+      WidgetsFlutterBinding.ensureInitialized(),
+      SystemChrome.setPreferredOrientations(
+          [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]),
+      runApp(const MyApp())
+    };
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
@@ -93,15 +93,15 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     getResultsPreference().then((value) => {
-      results = value,
-    });
+          results = value,
+        });
   }
 
   void createWord() {
     wordle = '';
     done = false;
     solved = false;
-    trial=0;
+    trial = 0;
     Random random = Random();
     while (wordle.length != 5) {
       int rnd = random.nextInt(4333);
@@ -341,6 +341,81 @@ class _GameScreenState extends State<GameScreen> {
     });
   }
 
+  var _pressed = 'kosom el sisi';
+
+  void _onPointerDown(String letter) {
+    setState(() {
+      _pressed = letter;
+    });
+  }
+
+  void _onPointerUp(String letter) {
+    setState(() {
+      appendLetter(letter);
+      _pressed = 'kosom el sisi';
+    });
+  }
+
+  Listener letterButton(String letter) {
+    return Listener(
+      onPointerDown: (p) {
+        _onPointerDown(letter);
+      },
+      onPointerUp: (p) {
+        setState(() {
+          _onPointerUp(letter);
+        });
+      },
+      child: Container(
+        width: 30,
+        height: 50,
+        child: Center(
+          child: AnimatedDefaultTextStyle(
+            duration: const Duration(milliseconds: 100),
+            style: TextStyle(
+                color: _pressed != letter
+                    ? Colors.black
+                    : Colors.black.withOpacity(0.25)),
+            child: Text(
+              letter.toUpperCase(),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: Colors.transparent,
+          ),
+          color: keyboardMap[letter],
+          borderRadius: BorderRadius.circular(10),
+        ),
+        padding: const EdgeInsets.all(0),
+        margin: const EdgeInsets.all(3),
+      ),
+    );
+  }
+
+  SizedBox letterBox(int x, y) {
+    return SizedBox.square(
+      dimension: 50,
+      child: Container(
+        margin: const EdgeInsets.all(5),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: Colors.black,
+            width: 3,
+          ),
+          color: colorTable[x][y],
+        ),
+        child: Text(
+          table[x][y],
+          style: const TextStyle(fontSize: 24),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -362,851 +437,91 @@ class _GameScreenState extends State<GameScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  SizedBox.square(
-                    dimension: 50,
-                    child: Container(
-                      margin: const EdgeInsets.all(5),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Colors.black,
-                        ),
-                        color: colorTable[0][0],
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        table[0][0],
-                        style: const TextStyle(fontSize: 24),
-                      ),
-                    ),
-                  ),
-                  SizedBox.square(
-                    dimension: 50,
-                    child: Container(
-                      margin: const EdgeInsets.all(5),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Colors.black,
-                        ),
-                        color: colorTable[0][1],
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        table[0][1],
-                        style: const TextStyle(fontSize: 24),
-                      ),
-                    ),
-                  ),
-                  SizedBox.square(
-                    dimension: 50,
-                    child: Container(
-                      margin: const EdgeInsets.all(5),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Colors.black,
-                        ),
-                        color: colorTable[0][2],
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        table[0][2],
-                        style: const TextStyle(fontSize: 24),
-                      ),
-                    ),
-                  ),
-                  SizedBox.square(
-                    dimension: 50,
-                    child: Container(
-                      margin: const EdgeInsets.all(5),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Colors.black,
-                        ),
-                        color: colorTable[0][3],
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        table[0][3],
-                        style: const TextStyle(fontSize: 24),
-                      ),
-                    ),
-                  ),
-                  SizedBox.square(
-                    dimension: 50,
-                    child: Container(
-                      margin: const EdgeInsets.all(5),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Colors.black,
-                        ),
-                        color: colorTable[0][4],
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        table[0][4],
-                        style: const TextStyle(fontSize: 24),
-                      ),
-                    ),
-                  ),
+                  letterBox(0, 0),
+                  letterBox(0, 1),
+                  letterBox(0, 2),
+                  letterBox(0, 3),
+                  letterBox(0, 4),
                 ],
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  SizedBox.square(
-                    dimension: 50,
-                    child: Container(
-                      margin: const EdgeInsets.all(5),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Colors.black,
-                        ),
-                        color: colorTable[1][0],
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        table[1][0],
-                        style: const TextStyle(fontSize: 24),
-                      ),
-                    ),
-                  ),
-                  SizedBox.square(
-                    dimension: 50,
-                    child: Container(
-                      margin: const EdgeInsets.all(5),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Colors.black,
-                        ),
-                        color: colorTable[1][1],
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        table[1][1],
-                        style: const TextStyle(fontSize: 24),
-                      ),
-                    ),
-                  ),
-                  SizedBox.square(
-                    dimension: 50,
-                    child: Container(
-                      margin: const EdgeInsets.all(5),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Colors.black,
-                        ),
-                        color: colorTable[1][2],
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        table[1][2],
-                        style: const TextStyle(fontSize: 24),
-                      ),
-                    ),
-                  ),
-                  SizedBox.square(
-                    dimension: 50,
-                    child: Container(
-                      margin: const EdgeInsets.all(5),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Colors.black,
-                        ),
-                        color: colorTable[1][3],
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        table[1][3],
-                        style: const TextStyle(fontSize: 24),
-                      ),
-                    ),
-                  ),
-                  SizedBox.square(
-                    dimension: 50,
-                    child: Container(
-                      margin: const EdgeInsets.all(5),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Colors.black,
-                        ),
-                        color: colorTable[1][4],
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        table[1][4],
-                        style: const TextStyle(fontSize: 24),
-                      ),
-                    ),
-                  ),
+                  letterBox(1, 0),
+                  letterBox(1, 1),
+                  letterBox(1, 2),
+                  letterBox(1, 3),
+                  letterBox(1, 4),
                 ],
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  SizedBox.square(
-                    dimension: 50,
-                    child: Container(
-                      margin: const EdgeInsets.all(5),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Colors.black,
-                        ),
-                        color: colorTable[2][0],
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        table[2][0],
-                        style: const TextStyle(fontSize: 24),
-                      ),
-                    ),
-                  ),
-                  SizedBox.square(
-                    dimension: 50,
-                    child: Container(
-                      margin: const EdgeInsets.all(5),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Colors.black,
-                        ),
-                        color: colorTable[2][1],
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        table[2][1],
-                        style: const TextStyle(fontSize: 24),
-                      ),
-                    ),
-                  ),
-                  SizedBox.square(
-                    dimension: 50,
-                    child: Container(
-                      margin: const EdgeInsets.all(5),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Colors.black,
-                        ),
-                        color: colorTable[2][2],
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        table[2][2],
-                        style: const TextStyle(fontSize: 24),
-                      ),
-                    ),
-                  ),
-                  SizedBox.square(
-                    dimension: 50,
-                    child: Container(
-                      margin: const EdgeInsets.all(5),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Colors.black,
-                        ),
-                        color: colorTable[2][3],
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        table[2][3],
-                        style: const TextStyle(fontSize: 24),
-                      ),
-                    ),
-                  ),
-                  SizedBox.square(
-                    dimension: 50,
-                    child: Container(
-                      margin: const EdgeInsets.all(5),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Colors.black,
-                        ),
-                        color: colorTable[2][4],
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        table[2][4],
-                        style: const TextStyle(fontSize: 24),
-                      ),
-                    ),
-                  ),
+                  letterBox(2, 0),
+                  letterBox(2, 1),
+                  letterBox(2, 2),
+                  letterBox(2, 3),
+                  letterBox(2, 4),
                 ],
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  SizedBox.square(
-                    dimension: 50,
-                    child: Container(
-                      margin: const EdgeInsets.all(5),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Colors.black,
-                        ),
-                        color: colorTable[3][0],
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        table[3][0],
-                        style: const TextStyle(fontSize: 24),
-                      ),
-                    ),
-                  ),
-                  SizedBox.square(
-                    dimension: 50,
-                    child: Container(
-                      margin: const EdgeInsets.all(5),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Colors.black,
-                        ),
-                        color: colorTable[3][1],
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        table[3][1],
-                        style: const TextStyle(fontSize: 24),
-                      ),
-                    ),
-                  ),
-                  SizedBox.square(
-                    dimension: 50,
-                    child: Container(
-                      margin: const EdgeInsets.all(5),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Colors.black,
-                        ),
-                        color: colorTable[3][2],
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        table[3][2],
-                        style: const TextStyle(fontSize: 24),
-                      ),
-                    ),
-                  ),
-                  SizedBox.square(
-                    dimension: 50,
-                    child: Container(
-                      margin: const EdgeInsets.all(5),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Colors.black,
-                        ),
-                        color: colorTable[3][3],
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        table[3][3],
-                        style: const TextStyle(fontSize: 24),
-                      ),
-                    ),
-                  ),
-                  SizedBox.square(
-                    dimension: 50,
-                    child: Container(
-                      margin: const EdgeInsets.all(5),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Colors.black,
-                        ),
-                        color: colorTable[3][4],
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        table[3][4],
-                        style: const TextStyle(fontSize: 24),
-                      ),
-                    ),
-                  ),
+                  letterBox(3, 0),
+                  letterBox(3, 1),
+                  letterBox(3, 2),
+                  letterBox(3, 3),
+                  letterBox(3, 4),
                 ],
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  SizedBox.square(
-                    dimension: 50,
-                    child: Container(
-                      margin: const EdgeInsets.all(5),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Colors.black,
-                        ),
-                        color: colorTable[4][0],
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        table[4][0],
-                        style: const TextStyle(fontSize: 24),
-                      ),
-                    ),
-                  ),
-                  SizedBox.square(
-                    dimension: 50,
-                    child: Container(
-                      margin: const EdgeInsets.all(5),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Colors.black,
-                        ),
-                        color: colorTable[4][1],
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        table[4][1],
-                        style: const TextStyle(fontSize: 24),
-                      ),
-                    ),
-                  ),
-                  SizedBox.square(
-                    dimension: 50,
-                    child: Container(
-                      margin: const EdgeInsets.all(5),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Colors.black,
-                        ),
-                        color: colorTable[4][2],
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        table[4][2],
-                        style: const TextStyle(fontSize: 24),
-                      ),
-                    ),
-                  ),
-                  SizedBox.square(
-                    dimension: 50,
-                    child: Container(
-                      margin: const EdgeInsets.all(5),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Colors.black,
-                        ),
-                        color: colorTable[4][3],
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        table[4][3],
-                        style: const TextStyle(fontSize: 24),
-                      ),
-                    ),
-                  ),
-                  SizedBox.square(
-                    dimension: 50,
-                    child: Container(
-                      margin: const EdgeInsets.all(5),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Colors.black,
-                        ),
-                        color: colorTable[4][4],
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        table[4][4],
-                        style: const TextStyle(fontSize: 24),
-                      ),
-                    ),
-                  ),
+                  letterBox(4, 0),
+                  letterBox(4, 1),
+                  letterBox(4, 2),
+                  letterBox(4, 3),
+                  letterBox(4, 4),
                 ],
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  SizedBox.square(
-                    dimension: 50,
-                    child: Container(
-                      margin: const EdgeInsets.all(5),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Colors.black,
-                        ),
-                        color: colorTable[5][0],
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        table[5][0],
-                        style: const TextStyle(fontSize: 24),
-                      ),
-                    ),
-                  ),
-                  SizedBox.square(
-                    dimension: 50,
-                    child: Container(
-                      margin: const EdgeInsets.all(5),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Colors.black,
-                        ),
-                        color: colorTable[5][1],
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        table[5][1],
-                        style: const TextStyle(fontSize: 24),
-                      ),
-                    ),
-                  ),
-                  SizedBox.square(
-                    dimension: 50,
-                    child: Container(
-                      margin: const EdgeInsets.all(5),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Colors.black,
-                        ),
-                        color: colorTable[5][2],
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        table[5][2],
-                        style: const TextStyle(fontSize: 24),
-                      ),
-                    ),
-                  ),
-                  SizedBox.square(
-                    dimension: 50,
-                    child: Container(
-                      margin: const EdgeInsets.all(5),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Colors.black,
-                        ),
-                        color: colorTable[5][3],
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        table[5][3],
-                        style: const TextStyle(fontSize: 24),
-                      ),
-                    ),
-                  ),
-                  SizedBox.square(
-                    dimension: 50,
-                    child: Container(
-                      margin: const EdgeInsets.all(5),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Colors.black,
-                        ),
-                        color: colorTable[5][4],
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        table[5][4],
-                        style: const TextStyle(fontSize: 24),
-                      ),
-                    ),
-                  ),
+                  letterBox(5, 0),
+                  letterBox(5, 1),
+                  letterBox(5, 2),
+                  letterBox(5, 3),
+                  letterBox(5, 4),
                 ],
               ),
               const Spacer(),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  CupertinoButton(
-                    color: keyboardMap['q'],
-                    child: const Text(
-                      'Q',
-                      style: TextStyle(color: Colors.black),
-                    ),
-                    onPressed: () {
-                      appendLetter('q');
-                    },
-                    padding: const EdgeInsets.all(0),
-                  ),
-                  CupertinoButton(
-                    color: keyboardMap['w'],
-                    child: const Text(
-                      'W',
-                      style: TextStyle(color: Colors.black),
-                    ),
-                    onPressed: () {
-                      appendLetter('w');
-                    },
-                    padding: const EdgeInsets.all(0),
-                  ),
-                  CupertinoButton(
-                    color: keyboardMap['e'],
-                    child: const Text(
-                      'E',
-                      style: TextStyle(color: Colors.black),
-                    ),
-                    onPressed: () {
-                      appendLetter('e');
-                    },
-                    padding: const EdgeInsets.all(0),
-                  ),
-                  CupertinoButton(
-                    color: keyboardMap['r'],
-                    child: const Text(
-                      'R',
-                      style: TextStyle(color: Colors.black),
-                    ),
-                    onPressed: () {
-                      appendLetter('r');
-                    },
-                    padding: const EdgeInsets.all(0),
-                  ),
-                  CupertinoButton(
-                    color: keyboardMap['t'],
-                    child: const Text(
-                      'T',
-                      style: TextStyle(color: Colors.black),
-                    ),
-                    onPressed: () {
-                      appendLetter('t');
-                    },
-                    padding: const EdgeInsets.all(0),
-                  ),
-                  CupertinoButton(
-                    color: keyboardMap['y'],
-                    child: const Text(
-                      'Y',
-                      style: TextStyle(color: Colors.black),
-                    ),
-                    onPressed: () {
-                      appendLetter('y');
-                    },
-                    padding: const EdgeInsets.all(0),
-                  ),
-                  CupertinoButton(
-                    color: keyboardMap['u'],
-                    child: const Text(
-                      'U',
-                      style: TextStyle(color: Colors.black),
-                    ),
-                    onPressed: () {
-                      appendLetter('u');
-                    },
-                    padding: const EdgeInsets.all(0),
-                  ),
-                  CupertinoButton(
-                    color: keyboardMap['i'],
-                    child: const Text(
-                      'I',
-                      style: TextStyle(color: Colors.black),
-                    ),
-                    onPressed: () {
-                      appendLetter('i');
-                    },
-                    padding: const EdgeInsets.all(0),
-                  ),
+                  letterButton('q'),
+                  letterButton('w'),
+                  letterButton('e'),
+                  letterButton('r'),
+                  letterButton('t'),
+                  letterButton('y'),
+                  letterButton('u'),
+                  letterButton('i'),
+                  letterButton('o'),
+                  letterButton('p'),
                 ],
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  CupertinoButton(
-                    color: keyboardMap['a'],
-                    child: const Text(
-                      'A',
-                      style: TextStyle(color: Colors.black),
-                    ),
-                    onPressed: () {
-                      appendLetter('a');
-                    },
-                    padding: const EdgeInsets.all(0),
-                  ),
-                  CupertinoButton(
-                    color: keyboardMap['s'],
-                    child: const Text(
-                      'S',
-                      style: TextStyle(color: Colors.black),
-                    ),
-                    onPressed: () {
-                      appendLetter('s');
-                    },
-                    padding: const EdgeInsets.all(0),
-                  ),
-                  CupertinoButton(
-                    color: keyboardMap['d'],
-                    child: const Text(
-                      'D',
-                      style: TextStyle(color: Colors.black),
-                    ),
-                    onPressed: () {
-                      appendLetter('d');
-                    },
-                    padding: const EdgeInsets.all(0),
-                  ),
-                  CupertinoButton(
-                    color: keyboardMap['f'],
-                    child: const Text(
-                      'F',
-                      style: TextStyle(color: Colors.black),
-                    ),
-                    onPressed: () {
-                      appendLetter('f');
-                    },
-                    padding: const EdgeInsets.all(0),
-                  ),
-                  CupertinoButton(
-                    color: keyboardMap['g'],
-                    child: const Text(
-                      'G',
-                      style: TextStyle(color: Colors.black),
-                    ),
-                    onPressed: () {
-                      appendLetter('g');
-                    },
-                    padding: const EdgeInsets.all(0),
-                  ),
-                  CupertinoButton(
-                    color: keyboardMap['h'],
-                    child: const Text(
-                      'H',
-                      style: TextStyle(color: Colors.black),
-                    ),
-                    onPressed: () {
-                      appendLetter('h');
-                    },
-                    padding: const EdgeInsets.all(0),
-                  ),
-                  CupertinoButton(
-                    color: keyboardMap['j'],
-                    child: const Text(
-                      'J',
-                      style: TextStyle(color: Colors.black),
-                    ),
-                    onPressed: () {
-                      appendLetter('j');
-                    },
-                    padding: const EdgeInsets.all(0),
-                  ),
-                  CupertinoButton(
-                    color: keyboardMap['k'],
-                    child: const Text(
-                      'K',
-                      style: TextStyle(color: Colors.black),
-                    ),
-                    onPressed: () {
-                      appendLetter('k');
-                    },
-                    padding: const EdgeInsets.all(0),
-                  ),
-                ],
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CupertinoButton(
-                    color: keyboardMap['z'],
-                    child: const Text(
-                      'Z',
-                      style: TextStyle(color: Colors.black),
-                    ),
-                    onPressed: () {
-                      appendLetter('z');
-                    },
-                    padding: const EdgeInsets.all(0),
-                  ),
-                  CupertinoButton(
-                    color: keyboardMap['x'],
-                    child: const Text(
-                      'X',
-                      style: TextStyle(color: Colors.black),
-                    ),
-                    onPressed: () {
-                      appendLetter('x');
-                    },
-                    padding: const EdgeInsets.all(0),
-                  ),
-                  CupertinoButton(
-                    color: keyboardMap['c'],
-                    child: const Text(
-                      'C',
-                      style: TextStyle(color: Colors.black),
-                    ),
-                    onPressed: () {
-                      appendLetter('c');
-                    },
-                    padding: const EdgeInsets.all(0),
-                  ),
-                  CupertinoButton(
-                    color: keyboardMap['v'],
-                    child: const Text(
-                      'V',
-                      style: TextStyle(color: Colors.black),
-                    ),
-                    onPressed: () {
-                      appendLetter('v');
-                    },
-                    padding: const EdgeInsets.all(0),
-                  ),
-                  CupertinoButton(
-                    color: keyboardMap['b'],
-                    child: const Text(
-                      'B',
-                      style: TextStyle(color: Colors.black),
-                    ),
-                    onPressed: () {
-                      appendLetter('b');
-                    },
-                    padding: const EdgeInsets.all(0),
-                  ),
-                  CupertinoButton(
-                    color: keyboardMap['n'],
-                    child: const Text(
-                      'N',
-                      style: TextStyle(color: Colors.black),
-                    ),
-                    onPressed: () {
-                      appendLetter('n');
-                    },
-                    padding: const EdgeInsets.all(0),
-                  ),
-                  CupertinoButton(
-                    color: keyboardMap['m'],
-                    child: const Text(
-                      'M',
-                      style: TextStyle(color: Colors.black),
-                    ),
-                    onPressed: () {
-                      appendLetter('m');
-                    },
-                    padding: const EdgeInsets.all(0),
-                  ),
-                  CupertinoButton(
-                    color: keyboardMap['p'],
-                    child: const Text(
-                      'P',
-                      style: TextStyle(color: Colors.black),
-                    ),
-                    onPressed: () {
-                      appendLetter('p');
-                    },
-                    padding: const EdgeInsets.all(0),
-                  ),
+                  letterButton('a'),
+                  letterButton('s'),
+                  letterButton('d'),
+                  letterButton('f'),
+                  letterButton('g'),
+                  letterButton('h'),
+                  letterButton('j'),
+                  letterButton('k'),
+                  letterButton('l'),
                 ],
               ),
               Row(
@@ -1246,35 +561,20 @@ class _GameScreenState extends State<GameScreen> {
                     },
                     padding: const EdgeInsets.all(0),
                   ),
-                  CupertinoButton(
-                    color: keyboardMap['l'],
-                    child: const Text(
-                      'L',
-                      style: TextStyle(color: Colors.black),
-                    ),
-                    onPressed: () {
-                      appendLetter('l');
-                    },
-                    padding: const EdgeInsets.all(0),
-                  ),
-                  CupertinoButton(
-                    color: keyboardMap['o'],
-                    child: const Text(
-                      'O',
-                      style: TextStyle(color: Colors.black),
-                    ),
-                    onPressed: () {
-                      appendLetter('o');
-                    },
-                    padding: const EdgeInsets.all(0),
-                  ),
+                  letterButton('z'),
+                  letterButton('x'),
+                  letterButton('c'),
+                  letterButton('v'),
+                  letterButton('b'),
+                  letterButton('n'),
+                  letterButton('m'),
                   CupertinoButton(
                     child: const Icon(Icons.backspace_outlined),
                     onPressed: deleteLetter,
                     padding: const EdgeInsets.all(0),
                   ),
                 ],
-              )
+              ),
             ],
           ),
         ),
