@@ -8,8 +8,9 @@ import 'dart:async';
 import 'package:flutter/services.dart'
     show DeviceOrientation, SystemChrome, rootBundle;
 import 'package:confetti/confetti.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-String wordle = '';
+String daword = '';
 String guess = '';
 int trial = 0;
 bool solved = false;
@@ -95,13 +96,13 @@ Future<int?> getVisitsPreference() async {
 }
 
 void createWord() {
-  wordle = '';
+  daword = '';
   done = false;
   solved = false;
   trial = 0;
   Random random = Random();
   int rnd = random.nextInt(2315);
-  wordle = answers![rnd];
+  daword = answers![rnd];
 }
 
 Future<void> readWords() async {
@@ -152,7 +153,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Wordle Clone',
+      title: 'Daword',
       theme: ThemeData(
         appBarTheme: const AppBarTheme(
           backgroundColor: Colors.white,
@@ -268,10 +269,52 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
         mainAxisAlignment: MainAxisAlignment.center,
       );
-    } else {
+    } else if (index == 1) {
       return Center(
         child: ListView(
           children: _getScores(),
+        ),
+      );
+    } else {
+      return Padding(
+        padding: const EdgeInsets.all(10.0),
+        child: Center(
+          child: Column(
+            children: [
+              const Padding(
+                padding: EdgeInsets.all(20.0),
+                child: Text(
+                  'Made By: Youssef Dawoud',
+                  style: TextStyle(fontSize: 18),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(30.0),
+                child: CupertinoButton.filled(
+                  child: const Text(
+                    "Email: youssef.dawoud@hotmail.com",
+                  ),
+                  onPressed: () async {
+                    const url =
+                        'mailto:youssef.dawoud@hotmail.com?subject=Daword app&body= ';
+                    if (await canLaunch(url)) launch(url);
+                  },
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(30.0),
+                child: CupertinoButton.filled(
+                  child: const Text(
+                    "Github: DeathPancake1",
+                  ),
+                  onPressed: () async {
+                    const url = 'https://github.com/DeathPancake1';
+                    if (await canLaunch(url)) launch(url);
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       );
     }
@@ -282,7 +325,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[200],
       appBar: AppBar(
-        title: const Text('Wordle Clone'),
+        title: const Text('Daword'),
       ),
       body: _activePage(_selectedIndex),
       bottomNavigationBar: BottomNavigationBar(
@@ -290,6 +333,7 @@ class _HomeScreenState extends State<HomeScreen> {
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(
               icon: Icon(Icons.watch_later), label: 'Scores'),
+          BottomNavigationBarItem(icon: Icon(Icons.info), label: 'Info')
         ],
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.black,
@@ -336,7 +380,7 @@ class TutorialScreen extends StatelessWidget {
               Navigator.popUntil(context, ModalRoute.withName('/'));
             },
             icon: const Icon(Icons.arrow_back)),
-        title: const Text('Wordle Tutorial'),
+        title: const Text('Daword Tutorial'),
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -344,7 +388,7 @@ class TutorialScreen extends StatelessWidget {
           const Padding(
             padding: EdgeInsets.all(8.0),
             child: Text(
-              'Guess the Wordle in 6 tries.',
+              'Guess the word in 6 tries.',
               style: _textStyling,
             ),
           ),
@@ -548,7 +592,7 @@ class _GameScreenState extends State<GameScreen> {
     results?.add('Tries: ' +
         (trial).toString() +
         '/6 The word: ' +
-        wordle +
+        daword +
         ' ' +
         solved.toString());
     saveResultsPreference(results!);
@@ -557,7 +601,7 @@ class _GameScreenState extends State<GameScreen> {
   void checkGuess() {
     setState(() {
       if (trial < 6 && !done) {
-        if (wordle == guess) {
+        if (daword == guess) {
           for (int i = 0; i < 5; i++) {
             colorTable[trial][i] = Colors.green;
             keyboardMap[guess.characters.elementAt(i)] = Colors.green;
@@ -567,7 +611,7 @@ class _GameScreenState extends State<GameScreen> {
           trial++;
         } else if (allowedGuesses?.contains(guess) ?? false) {
           for (int i = 0; i < 5; i++) {
-            if (wordle.characters.contains(guess.characters.elementAt(i))) {
+            if (daword.characters.contains(guess.characters.elementAt(i))) {
               colorTable[trial][i] = Colors.amber;
               if (keyboardMap[guess.characters.elementAt(i)] != Colors.green) {
                 keyboardMap[guess.characters.elementAt(i)] = Colors.amber;
@@ -579,7 +623,7 @@ class _GameScreenState extends State<GameScreen> {
           }
           for (int i = 0; i < 5; i++) {
             if (guess.characters.elementAt(i) ==
-                wordle.characters.elementAt(i)) {
+                daword.characters.elementAt(i)) {
               colorTable[trial][i] = Colors.green;
               keyboardMap[guess.characters.elementAt(i)] = Colors.green;
             }
@@ -675,7 +719,7 @@ class _GameScreenState extends State<GameScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Wordle Clone'),
+        title: const Text('Daword'),
         leading: IconButton(
             onPressed: () {
               Navigator.popUntil(context, ModalRoute.withName('/'));
@@ -770,107 +814,115 @@ class _GameScreenState extends State<GameScreen> {
                 ],
               ),
               const Spacer(),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              Stack(
                 children: [
-                  _letterButton('q'),
-                  _letterButton('w'),
-                  _letterButton('e'),
-                  _letterButton('r'),
-                  _letterButton('t'),
-                  _letterButton('y'),
-                  _letterButton('u'),
-                  _letterButton('i'),
-                  _letterButton('o'),
-                  _letterButton('p'),
-                ],
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _letterButton('a'),
-                  _letterButton('s'),
-                  _letterButton('d'),
-                  _letterButton('f'),
-                  _letterButton('g'),
-                  _letterButton('h'),
-                  _letterButton('j'),
-                  _letterButton('k'),
-                  _letterButton('l'),
-                ],
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  CupertinoButton(
-                    child: const Text('Enter'),
-                    onPressed: () {
-                      var oldTrial = trial;
-                      checkGuess();
-                      if (trial == oldTrial && !done) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: const Text('Word not in Library'),
-                            action: SnackBarAction(
-                              label: 'OK',
-                              onPressed: () {
-                                // Code to execute.
-                              },
-                            ),
+                  Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          _letterButton('q'),
+                          _letterButton('w'),
+                          _letterButton('e'),
+                          _letterButton('r'),
+                          _letterButton('t'),
+                          _letterButton('y'),
+                          _letterButton('u'),
+                          _letterButton('i'),
+                          _letterButton('o'),
+                          _letterButton('p'),
+                        ],
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          _letterButton('a'),
+                          _letterButton('s'),
+                          _letterButton('d'),
+                          _letterButton('f'),
+                          _letterButton('g'),
+                          _letterButton('h'),
+                          _letterButton('j'),
+                          _letterButton('k'),
+                          _letterButton('l'),
+                        ],
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          CupertinoButton(
+                            child: const Text('Enter'),
+                            onPressed: () {
+                              var oldTrial = trial;
+                              checkGuess();
+                              if (trial == oldTrial && !done) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: const Text('Word not in Library'),
+                                    action: SnackBarAction(
+                                      label: 'OK',
+                                      onPressed: () {
+                                        // Code to execute.
+                                      },
+                                    ),
+                                  ),
+                                );
+                              }
+                              if (done && solved) {
+                                _controllerRight.play();
+                                _controllerLeft.play();
+                              } else if (done) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('The Word is ' + daword),
+                                    action: SnackBarAction(
+                                      label: 'OK',
+                                      onPressed: () {
+                                        // Code to execute.
+                                      },
+                                    ),
+                                  ),
+                                );
+                              }
+                            },
+                            padding: const EdgeInsets.all(0),
                           ),
-                        );
-                      }
-                      if (done && solved) {
-                        _controllerRight.play();
-                        _controllerLeft.play();
-                      } else if (done) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('The Word is ' + wordle),
-                            action: SnackBarAction(
-                              label: 'OK',
-                              onPressed: () {
-                                // Code to execute.
-                              },
-                            ),
+                          _letterButton('z'),
+                          _letterButton('x'),
+                          _letterButton('c'),
+                          _letterButton('v'),
+                          _letterButton('b'),
+                          _letterButton('n'),
+                          _letterButton('m'),
+                          CupertinoButton(
+                            child: const Icon(Icons.backspace_outlined),
+                            onPressed: deleteLetter,
+                            padding: const EdgeInsets.all(0),
                           ),
-                        );
-                      }
-                    },
-                    padding: const EdgeInsets.all(0),
+                        ],
+                      ),
+                    ],
                   ),
-                  _letterButton('z'),
-                  _letterButton('x'),
-                  _letterButton('c'),
-                  _letterButton('v'),
-                  _letterButton('b'),
-                  _letterButton('n'),
-                  _letterButton('m'),
-                  CupertinoButton(
-                    child: const Icon(Icons.backspace_outlined),
-                    onPressed: deleteLetter,
-                    padding: const EdgeInsets.all(0),
-                  ),
-                ],
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  ConfettiWidget(
-                    confettiController: _controllerLeft,
-                    blastDirection: pi / 4,
-                    emissionFrequency: 0.3,
-                    numberOfParticles: 10,
-                    shouldLoop: false,
-                    blastDirectionality: BlastDirectionality.explosive,
-                  ),
-                  ConfettiWidget(
-                    confettiController: _controllerRight,
-                    blastDirection: 3 * pi / 4,
-                    emissionFrequency: 0.3,
-                    numberOfParticles: 10,
-                    shouldLoop: false,
-                    blastDirectionality: BlastDirectionality.explosive,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      ConfettiWidget(
+                        confettiController: _controllerLeft,
+                        blastDirection: pi / 4,
+                        emissionFrequency: 0.3,
+                        numberOfParticles: 10,
+                        shouldLoop: false,
+                        blastDirectionality: BlastDirectionality.explosive,
+                      ),
+                      ConfettiWidget(
+                        confettiController: _controllerRight,
+                        blastDirection: 3 * pi / 4,
+                        emissionFrequency: 0.3,
+                        numberOfParticles: 10,
+                        shouldLoop: false,
+                        blastDirectionality: BlastDirectionality.explosive,
+                      ),
+                    ],
                   ),
                 ],
               ),
