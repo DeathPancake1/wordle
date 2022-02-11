@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'dart:math';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
@@ -241,15 +242,17 @@ class _HomeScreenState extends State<HomeScreen> {
               const Padding(
                 padding: EdgeInsets.all(20.0),
                 child: Text(
-                  'Made By: Youssef Dawoud',
+                  'Made By\nYoussef Dawoud',
                   style: TextStyle(fontSize: 18),
+                  textAlign: TextAlign.center,
                 ),
               ),
               Padding(
                 padding: const EdgeInsets.all(30.0),
                 child: CupertinoButton.filled(
                   child: const Text(
-                    "Email: youssef.dawoud@hotmail.com",
+                    "Email\nyoussef.dawoud@hotmail.com",
+                    textAlign: TextAlign.center,
                   ),
                   onPressed: () async {
                     const url =
@@ -263,6 +266,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: CupertinoButton.filled(
                   child: const Text(
                     "Github: DeathPancake1",
+                    textAlign: TextAlign.center,
                   ),
                   onPressed: () async {
                     const url = 'https://github.com/DeathPancake1';
@@ -609,13 +613,16 @@ class _GameScreenState extends State<GameScreen> {
                     Colors.green) {
                   _keyboardMap[_guess.characters.elementAt(i)] = Colors.amber;
                 }
-              } else {
+              }else{
                 _colorTable[_trial][i] = Colors.grey;
-                if (_keyboardMap[_guess.characters.elementAt(i)] !=
-                    Colors.green){
-                  _keyboardMap[_guess.characters.elementAt(i)] = Colors.grey;
-                }
               }
+            }
+          }
+          for (int i=0;i<_daword.length;i++){
+            if (_keyboardMap[_guess.characters.elementAt(i)] !=
+                Colors.green&&_keyboardMap[_guess.characters.elementAt(i)] !=
+                Colors.amber){
+              _keyboardMap[_guess.characters.elementAt(i)] = Colors.grey;
             }
           }
           _trial++;
