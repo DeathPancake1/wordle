@@ -10,42 +10,9 @@ import 'package:flutter/services.dart'
 import 'package:confetti/confetti.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-String daword = '';
-String guess = '';
-int trial = 0;
-bool solved = false;
-bool done = false;
 List<String>? results = []..length = 0;
 List<String>? allowedGuesses = []..length = 0;
 List<String>? answers = []..length = 0;
-Map<String, Color> keyboardMap = {
-  'q': Colors.grey[300]!,
-  'w': Colors.grey[300]!,
-  'e': Colors.grey[300]!,
-  'r': Colors.grey[300]!,
-  't': Colors.grey[300]!,
-  'y': Colors.grey[300]!,
-  'u': Colors.grey[300]!,
-  'i': Colors.grey[300]!,
-  'a': Colors.grey[300]!,
-  's': Colors.grey[300]!,
-  'd': Colors.grey[300]!,
-  'f': Colors.grey[300]!,
-  'g': Colors.grey[300]!,
-  'h': Colors.grey[300]!,
-  'j': Colors.grey[300]!,
-  'k': Colors.grey[300]!,
-  'z': Colors.grey[300]!,
-  'x': Colors.grey[300]!,
-  'c': Colors.grey[300]!,
-  'v': Colors.grey[300]!,
-  'b': Colors.grey[300]!,
-  'n': Colors.grey[300]!,
-  'm': Colors.grey[300]!,
-  'p': Colors.grey[300]!,
-  'l': Colors.grey[300]!,
-  'o': Colors.grey[300]!,
-};
 
 Future<bool> saveResultsPreference(List<String> res) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -95,15 +62,6 @@ Future<int?> getVisitsPreference() async {
   return visits;
 }
 
-void createWord() {
-  daword = '';
-  done = false;
-  solved = false;
-  trial = 0;
-  Random random = Random();
-  int rnd = random.nextInt(2315);
-  daword = answers![rnd];
-}
 
 Future<void> readWords() async {
   if (answers?.length == 0) {
@@ -111,19 +69,19 @@ Future<void> readWords() async {
       await rootBundle
           .loadString('assets/allowed_guesses.txt')
           .then((value) => {
-                for (String i in const LineSplitter().convert(value))
-                  {
-                    allowedGuesses?.add(i),
-                  },
-                saveGuessesPreference(allowedGuesses!),
-              });
+        for (String i in const LineSplitter().convert(value))
+          {
+            allowedGuesses?.add(i),
+          },
+        saveGuessesPreference(allowedGuesses!),
+      });
       await rootBundle.loadString('assets/answers.txt').then((value) => {
-            for (String i in const LineSplitter().convert(value))
-              {
-                answers?.add(i),
-              },
-            saveAnswersPreference(answers!),
-          });
+        for (String i in const LineSplitter().convert(value))
+          {
+            answers?.add(i),
+          },
+        saveAnswersPreference(answers!),
+      });
     } catch (e) {
       if (kDebugMode) {
         print(e);
@@ -131,20 +89,20 @@ Future<void> readWords() async {
     }
   } else {
     getAnswersPreference().then((value) => {
-          answers = value,
-        });
+      answers = value,
+    });
     getGuessesPreference().then((value) => {
-          allowedGuesses = value,
-        });
+      allowedGuesses = value,
+    });
   }
 }
 
 void main() => {
-      WidgetsFlutterBinding.ensureInitialized(),
-      SystemChrome.setPreferredOrientations(
-          [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]),
-      runApp(const MyApp())
-    };
+  WidgetsFlutterBinding.ensureInitialized(),
+  SystemChrome.setPreferredOrientations(
+      [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]),
+  runApp(const MyApp())
+};
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
@@ -180,8 +138,8 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     readWords();
     getResultsPreference().then((value) => {
-          results = value,
-        });
+      results = value,
+    });
   }
 
   void _onItemTapped(int index) {
@@ -230,24 +188,23 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: const Text('Start'),
                 onPressed: () {
                   getVisitsPreference().then((value) => {
-                        if (value != null)
-                          {
-                            createWord(),
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => const GameScreen())),
-                          }
-                        else
-                          {
-                            saveVisitsPreference(1),
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) =>
-                                        const TutorialScreen())),
-                          }
-                      });
+                    if (value != null)
+                      {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const GameScreen())),
+                      }
+                    else
+                      {
+                        saveVisitsPreference(1),
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) =>
+                                const TutorialScreen())),
+                      }
+                  });
                 }),
           ),
           const Divider(
@@ -469,7 +426,6 @@ class TutorialScreen extends StatelessWidget {
             child: CupertinoButton.filled(
                 child: const Text('Start'),
                 onPressed: () {
-                  createWord();
                   Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -493,15 +449,21 @@ class _GameScreenState extends State<GameScreen> {
   late ConfettiController _controllerLeft;
   static const row = 6;
   static const col = 5;
-  var table = List.generate(row, (i) => List.filled(col, '', growable: false),
+  String _daword = '';
+  String _guess = '';
+  int _trial = 0;
+  bool _solved = false;
+  bool _done = false;
+  Map<String, Color> _keyboardMap = {};
+  final _table = List.generate(row, (i) => List.filled(col, '', growable: false),
       growable: false);
-  var colorTable = List.generate(
+  final _colorTable = List.generate(
       row, (i) => List.filled(col, Colors.grey[100], growable: false),
       growable: false);
   @override
   void initState() {
     super.initState();
-    keyboardMap = {
+    _keyboardMap = {
       'q': Colors.grey[300]!,
       'w': Colors.grey[300]!,
       'e': Colors.grey[300]!,
@@ -529,10 +491,11 @@ class _GameScreenState extends State<GameScreen> {
       'l': Colors.grey[300]!,
       'o': Colors.grey[300]!,
     };
-    guess = '';
-    trial = 0;
-    solved = false;
-    done = false;
+    _createWord();
+    _guess = '';
+    _trial = 0;
+    _solved = false;
+    _done = false;
     _controllerRight = ConfettiController(duration: const Duration(seconds: 1));
     _controllerLeft = ConfettiController(duration: const Duration(seconds: 1));
   }
@@ -544,19 +507,29 @@ class _GameScreenState extends State<GameScreen> {
     super.dispose();
   }
 
-  void deleteLetter() {
+  void _createWord() {
+    _daword = '';
+    _done = false;
+    _solved = false;
+    _trial = 0;
+    Random random = Random();
+    int rnd = random.nextInt(2315);
+    _daword = answers![rnd];
+  }
+
+  void _deleteLetter() {
     setState(() {
-      if (!done) {
-        if (guess.isNotEmpty) {
-          guess = guess.substring(0, guess.length - 1);
+      if (!_done) {
+        if (_guess.isNotEmpty) {
+          _guess = _guess.substring(0, _guess.length - 1);
         }
-        if (trial < 6) {
+        if (_trial < 6) {
           int i = 0;
           while (i < 5) {
-            if (i >= guess.length) {
-              table[trial][i] = '';
+            if (i >= _guess.length) {
+              _table[_trial][i] = '';
             } else {
-              table[trial][i] = guess.characters.elementAt(i);
+              _table[_trial][i] = _guess.characters.elementAt(i);
             }
             i++;
           }
@@ -565,19 +538,19 @@ class _GameScreenState extends State<GameScreen> {
     });
   }
 
-  void appendLetter(String x) {
+  void _appendLetter(String x) {
     setState(() {
-      if (!done) {
-        if (guess.length < 5) {
-          guess = guess + x;
+      if (!_done) {
+        if (_guess.length < 5) {
+          _guess = _guess + x;
         }
-        if (trial < 6) {
+        if (_trial < 6) {
           int i = 0;
           while (i < 5) {
-            if (i >= guess.length) {
-              table[trial][i] = '';
+            if (i >= _guess.length) {
+              _table[_trial][i] = '';
             } else {
-              table[trial][i] = guess.characters.elementAt(i);
+              _table[_trial][i] = _guess.characters.elementAt(i);
             }
             i++;
           }
@@ -587,54 +560,71 @@ class _GameScreenState extends State<GameScreen> {
     });
   }
 
-  void endGame() {
+  void _endGame() {
     results ??= []..length = 0;
     results?.add('Tries: ' +
-        (trial).toString() +
+        (_trial).toString() +
         '/6 The word: ' +
-        daword +
+        _daword +
         ' ' +
-        solved.toString());
+        _solved.toString());
     saveResultsPreference(results!);
   }
 
-  void checkGuess() {
+  List<String> _dawordChars(){
+    List<String> chars=[];
+    for(int i=0;i<_daword.length;i++){
+      chars.add(_daword[i]);
+    }
+    return chars;
+  }
+
+  void _checkGuess() {
     setState(() {
-      if (trial < 6 && !done) {
-        if (daword == guess) {
-          for (int i = 0; i < 5; i++) {
-            colorTable[trial][i] = Colors.green;
-            keyboardMap[guess.characters.elementAt(i)] = Colors.green;
+      List<String> chars=_dawordChars();
+      if (_trial < 6 && !_done) {
+        if (_daword == _guess) {
+          for (int i = 0; i < _daword.length; i++) {
+            _colorTable[_trial][i] = Colors.green;
+            _keyboardMap[_guess.characters.elementAt(i)] = Colors.green;
           }
-          done = true;
-          solved = true;
-          trial++;
-        } else if (allowedGuesses?.contains(guess) ?? false) {
-          for (int i = 0; i < 5; i++) {
-            if (daword.characters.contains(guess.characters.elementAt(i))) {
-              colorTable[trial][i] = Colors.amber;
-              if (keyboardMap[guess.characters.elementAt(i)] != Colors.green) {
-                keyboardMap[guess.characters.elementAt(i)] = Colors.amber;
+          _done = true;
+          _solved = true;
+          _trial++;
+        } else if (allowedGuesses?.contains(_guess) ?? false) {
+          for (int i = 0; i < _daword.length; i++) {
+            if (_guess.characters.elementAt(i) ==
+                _daword.characters.elementAt(i)) {
+              _colorTable[_trial][i] = Colors.green;
+              _keyboardMap[_guess.characters.elementAt(i)] = Colors.green;
+              chars.remove(_guess.characters.elementAt(i));
+            }
+          }
+          for (int i = 0; i < _daword.length; i++){
+            if(_colorTable[_trial][i] != Colors.green){
+              if (chars.contains(_guess.characters.elementAt(i))) {
+                chars.remove(_guess.characters.elementAt(i));
+                _colorTable[_trial][i] = Colors.amber;
+                if (_keyboardMap[_guess.characters.elementAt(i)] !=
+                    Colors.green) {
+                  _keyboardMap[_guess.characters.elementAt(i)] = Colors.amber;
+                }
+              } else {
+                _colorTable[_trial][i] = Colors.grey;
+                if (_keyboardMap[_guess.characters.elementAt(i)] !=
+                    Colors.green){
+                  _keyboardMap[_guess.characters.elementAt(i)] = Colors.grey;
+                }
               }
-            } else {
-              colorTable[trial][i] = Colors.grey;
-              keyboardMap[guess.characters.elementAt(i)] = Colors.grey;
             }
           }
-          for (int i = 0; i < 5; i++) {
-            if (guess.characters.elementAt(i) ==
-                daword.characters.elementAt(i)) {
-              colorTable[trial][i] = Colors.green;
-              keyboardMap[guess.characters.elementAt(i)] = Colors.green;
-            }
-          }
-          trial++;
-          guess = '';
+          _trial++;
+          _guess = '';
         }
       }
-      if (trial == 6 || done == true) {
-        done = true;
-        endGame();
+      if (_trial == 6 || _done == true) {
+        _done = true;
+        _endGame();
       }
     });
   }
@@ -649,7 +639,7 @@ class _GameScreenState extends State<GameScreen> {
 
   void _onPointerUp(String letter) {
     setState(() {
-      appendLetter(letter);
+      _appendLetter(letter);
       _pressed = '';
     });
   }
@@ -685,7 +675,7 @@ class _GameScreenState extends State<GameScreen> {
           border: Border.all(
             color: Colors.transparent,
           ),
-          color: keyboardMap[letter],
+          color: _keyboardMap[letter],
           borderRadius: BorderRadius.circular(10),
         ),
         padding: const EdgeInsets.all(0),
@@ -705,10 +695,10 @@ class _GameScreenState extends State<GameScreen> {
             color: Colors.grey[500]!,
             width: 3,
           ),
-          color: colorTable[x][y],
+          color: _colorTable[x][y],
         ),
         child: Text(
-          table[x][y].toUpperCase(),
+          _table[x][y].toUpperCase(),
           style: const TextStyle(fontSize: 24),
         ),
       ),
@@ -725,22 +715,22 @@ class _GameScreenState extends State<GameScreen> {
               Navigator.popUntil(context, ModalRoute.withName('/'));
             },
             icon: const Icon(Icons.arrow_back)),
-        actions: done
+        actions: _done
             ? [
-                CupertinoButton(
-                    child: const Text('Play Again'),
-                    onPressed: () {
-                      createWord();
-                      Navigator.pushReplacement(
-                        context,
-                        PageRouteBuilder(
-                          pageBuilder: (context, animation1, animation2) =>
-                              const GameScreen(),
-                          transitionDuration: const Duration(seconds: 0),
-                        ),
-                      );
-                    }),
-              ]
+          CupertinoButton(
+              child: const Text('Play Again'),
+              onPressed: () {
+                _createWord();
+                Navigator.pushReplacement(
+                  context,
+                  PageRouteBuilder(
+                    pageBuilder: (context, animation1, animation2) =>
+                    const GameScreen(),
+                    transitionDuration: const Duration(seconds: 0),
+                  ),
+                );
+              }),
+        ]
             : null,
       ),
       body: Center(
@@ -853,9 +843,9 @@ class _GameScreenState extends State<GameScreen> {
                           CupertinoButton(
                             child: const Text('Enter'),
                             onPressed: () {
-                              var oldTrial = trial;
-                              checkGuess();
-                              if (trial == oldTrial && !done) {
+                              var oldTrial = _trial;
+                              _checkGuess();
+                              if (_trial == oldTrial && !_done) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: const Text('Word not in Library'),
@@ -868,13 +858,13 @@ class _GameScreenState extends State<GameScreen> {
                                   ),
                                 );
                               }
-                              if (done && solved) {
+                              if (_done && _solved) {
                                 _controllerRight.play();
                                 _controllerLeft.play();
-                              } else if (done) {
+                              } else if (_done) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: Text('The Word is ' + daword),
+                                    content: Text('The Word is ' + _daword),
                                     action: SnackBarAction(
                                       label: 'OK',
                                       onPressed: () {
@@ -896,7 +886,7 @@ class _GameScreenState extends State<GameScreen> {
                           _letterButton('m'),
                           CupertinoButton(
                             child: const Icon(Icons.backspace_outlined),
-                            onPressed: deleteLetter,
+                            onPressed: _deleteLetter,
                             padding: const EdgeInsets.all(0),
                           ),
                         ],

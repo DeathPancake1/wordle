@@ -1,4 +1,4 @@
-package com.example.wordle
+package com.dawordPac.daword
 
 import io.flutter.embedding.android.FlutterActivity
 
