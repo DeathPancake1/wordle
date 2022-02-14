@@ -696,7 +696,7 @@ class _GameScreenState extends State<GameScreen> {
           border: Border.all(
             color: Colors.transparent,
           ),
-          color: _keyboardMap[letter],
+          color: _pressed==letter?_keyboardMap[letter]?.withOpacity(0.8):_keyboardMap[letter],
           borderRadius: BorderRadius.circular(10),
         ),
         padding: const EdgeInsets.all(0),
