@@ -6,7 +6,7 @@ This is a remake of the popular game called wordle using flutter.
 
 https://www.nytimes.com/games/wordle/index.html
 
-## ependencies
+## dependencies
 
 Shared_Prefrences
 Path_provider
