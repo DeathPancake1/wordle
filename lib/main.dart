@@ -13,6 +13,7 @@ import 'package:url_launcher/url_launcher.dart';
 List<String>? results = []..length = 0;
 List<String>? allowedGuesses = []..length = 0;
 List<String>? answers = []..length = 0;
+List<String> randomWordsPhrases = []..length = 0;
 
 Future<bool> saveResultsPreference(List<String> res) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -95,7 +96,14 @@ Future<void> readWords() async {
       allowedGuesses = value,
     });
   }
+  await rootBundle.loadString('assets/tyring_random_words.txt').then((value) => {
+    for (String i in const LineSplitter().convert(value))
+      {
+        randomWordsPhrases.add(i),
+      },
+  });
 }
+
 
 void main() => {
   WidgetsFlutterBinding.ensureInitialized(),
@@ -457,6 +465,7 @@ class _GameScreenState extends State<GameScreen> {
   int _trial = 0;
   bool _solved = false;
   bool _done = false;
+  int _badGuess = 0;
   Map<String, Color> _keyboardMap = {};
   final _table = List.generate(row, (i) => List.filled(col, '', growable: false),
       growable: false);
@@ -499,6 +508,7 @@ class _GameScreenState extends State<GameScreen> {
     _trial = 0;
     _solved = false;
     _done = false;
+    _badGuess=0;
     _controllerRight = ConfettiController(duration: const Duration(seconds: 1));
     _controllerLeft = ConfettiController(duration: const Duration(seconds: 1));
   }
@@ -587,6 +597,7 @@ class _GameScreenState extends State<GameScreen> {
       List<String> chars=_dawordChars();
       if (_trial < 6 && !_done) {
         if (_daword == _guess) {
+          _badGuess=0;
           for (int i = 0; i < _daword.length; i++) {
             _colorTable[_trial][i] = Colors.green;
             _keyboardMap[_guess.characters.elementAt(i)] = Colors.green;
@@ -595,6 +606,7 @@ class _GameScreenState extends State<GameScreen> {
           _solved = true;
           _trial++;
         } else if (allowedGuesses?.contains(_guess) ?? false) {
+          _badGuess=0;
           for (int i = 0; i < _daword.length; i++) {
             if (_guess.characters.elementAt(i) ==
                 _daword.characters.elementAt(i)) {
@@ -626,6 +638,9 @@ class _GameScreenState extends State<GameScreen> {
           }
           _trial++;
           _guess = '';
+        }
+        else{
+          _badGuess++;
         }
       }
       if (_trial == 6 || _done == true) {
@@ -851,10 +866,24 @@ class _GameScreenState extends State<GameScreen> {
                             onPressed: () {
                               var oldTrial = _trial;
                               _checkGuess();
-                              if (_trial == oldTrial && !_done) {
+                              if (_trial == oldTrial && !_done && _badGuess<3) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: const Text('Word not in Library'),
+                                    action: SnackBarAction(
+                                      label: 'OK',
+                                      onPressed: () {
+                                        // Code to execute.
+                                      },
+                                    ),
+                                  ),
+                                );
+                              }else if(_trial == oldTrial && !_done && _badGuess>=3){
+                                Random random = Random();
+                                int rnd = random.nextInt(randomWordsPhrases.length);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content:  Text(randomWordsPhrases[rnd]),
                                     action: SnackBarAction(
                                       label: 'OK',
                                       onPressed: () {
