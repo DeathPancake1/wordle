@@ -2,6 +2,10 @@
 
 This is a remake of the popular game called wordle using flutter.
 
+## Android App
+
+https://play.google.com/store/apps/details?id=com.dawordPac.daword
+
 ## The original game
 
 https://www.nytimes.com/games/wordle/index.html
